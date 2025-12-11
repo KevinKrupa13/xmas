@@ -30,8 +30,32 @@
       height: 100%;
       object-fit: cover;
       opacity: 0.75;
-      z-index: -1;
+      z-index: -2;
       pointer-events: none;
+      transition: filter 0.4s ease, opacity 0.4s ease, transform 0.4s ease;
+    }
+    .bg-video--overlay {
+      inset: auto;
+      top: 50%;
+      left: 50%;
+      width: min(80vmin, 420px);
+      height: min(80vmin, 420px);
+      transform: translate(-50%, -50%);
+      filter: none;
+      opacity: 0;
+      z-index: -1;
+      display: none;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55);
+      border-radius: 18px;
+    }
+    body.compact-layout .bg-video--base {
+      opacity: 0.65;
+      filter: blur(24px);
+      transform: scale(1.15);
+    }
+    body.compact-layout .bg-video--overlay {
+      display: block;
+      opacity: 1;
     }
     .player {
       width: min(92vw, 390px);
@@ -170,42 +194,51 @@
       color: #fff;
       border-radius: 999px;
     }
-    body.playing {
+    body.playing,
+    body.compact-layout {
       justify-content: flex-start;
       align-items: flex-start;
       padding: 1rem;
     }
-    body.playing .player {
+    body.playing .player,
+    body.compact-layout .player {
       width: min(94vw, 640px);
       flex-direction: row;
       align-items: center;
       gap: 1.25rem;
     }
-    body.playing .cover-wrapper {
+    body.playing .cover-wrapper,
+    body.compact-layout .cover-wrapper {
       width: 160px;
     }
-    body.playing .player img {
+    body.playing .player img,
+    body.compact-layout .player img {
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
     }
-    body.playing .info-panel {
+    body.playing .info-panel,
+    body.compact-layout .info-panel {
       align-items: flex-start;
       max-width: 360px;
       width: 100%;
       gap: 0.85rem;
       flex: 1;
     }
-    body.playing .progress-bar {
+    body.playing .progress-bar,
+    body.compact-layout .progress-bar {
       height: 4px;
     }
-    body.playing .controls {
+    body.playing .controls,
+    body.compact-layout .controls {
       justify-content: center;
       gap: 0.5rem;
     }
-    body.playing .skip-button {
+    body.playing .skip-button,
+    body.compact-layout .skip-button {
       width: 44px;
       height: 44px;
     }
-    body.playing .play-toggle {
+    body.playing .play-toggle,
+    body.compact-layout .play-toggle {
       width: 58px;
       height: 58px;
       font-size: 1.4rem;
@@ -213,9 +246,8 @@
   </style>
 </head>
 <body>
-  <video class="bg-video" autoplay muted loop playsinline aria-hidden="true">
-    <source src="xmas-horizontal.mp4" type="video/mp4" />
-  </video>
+  <video class="bg-video bg-video--base" id="bgVideo" autoplay muted loop playsinline aria-hidden="true"></video>
+  <video class="bg-video bg-video--overlay" id="bgVideoOverlay" autoplay muted loop playsinline aria-hidden="true"></video>
   <main class="player">
     <div class="cover-wrapper">
       <img src="Album_Cover.JPG" alt="Christmas song album cover" draggable="false" id="albumCover" />
@@ -249,6 +281,10 @@
   </div>
 
   <script>
+    const CDN_BASE = 'https://dud787gvbbzry.cloudfront.net';
+    const HORIZONTAL_VIDEO = `${CDN_BASE}/xmas-horizontal.mp4`;
+    const SQUARE_VIDEO = `${CDN_BASE}/xmas-squareish.mp4`;
+
     const audio = document.getElementById('player');
     const playPauseButton = document.getElementById('playPause');
     const skipBackButton = document.getElementById('skipBack');
@@ -258,6 +294,41 @@
     const coverModal = document.getElementById('coverModal');
     const closeModal = document.getElementById('closeModal');
     const albumCover = document.getElementById('albumCover');
+    const bgVideo = document.getElementById('bgVideo');
+    const bgVideoOverlay = document.getElementById('bgVideoOverlay');
+    const mobileQuery = window.matchMedia('(max-width: 600px)');
+
+    const syncVideoSources = () => {
+      const isMobile = mobileQuery.matches;
+
+      if (bgVideo) {
+        const baseSrc = isMobile ? SQUARE_VIDEO : HORIZONTAL_VIDEO;
+        if (bgVideo.getAttribute('src') !== baseSrc) {
+          bgVideo.src = baseSrc;
+          bgVideo.load();
+        }
+        bgVideo.play?.().catch(() => {});
+      }
+
+      if (bgVideoOverlay) {
+        if (isMobile) {
+          if (bgVideoOverlay.getAttribute('src') !== SQUARE_VIDEO) {
+            bgVideoOverlay.src = SQUARE_VIDEO;
+            bgVideoOverlay.load();
+          }
+          bgVideoOverlay.play?.().catch(() => {});
+        } else if (bgVideoOverlay.getAttribute('src')) {
+          bgVideoOverlay.pause?.();
+          bgVideoOverlay.removeAttribute('src');
+          bgVideoOverlay.load();
+        }
+      }
+    };
+
+    const updateViewportState = () => {
+      document.body.classList.toggle('compact-layout', mobileQuery.matches);
+      syncVideoSources();
+    };
 
     const updateProgress = () => {
       if (!audio.duration) return;
@@ -328,6 +399,13 @@
       }
     });
 
+    if (mobileQuery.addEventListener) {
+      mobileQuery.addEventListener('change', updateViewportState);
+    } else if (mobileQuery.addListener) {
+      mobileQuery.addListener(updateViewportState);
+    }
+
+    updateViewportState();
     updatePlaybackState(false);
   </script>
 </body>
