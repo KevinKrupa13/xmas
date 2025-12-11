@@ -15,10 +15,23 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative;
+      overflow: hidden;
       background: #010101;
       font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: #fff;
       padding: 1.75rem;
+      transition: padding 0.4s ease;
+    }
+    .bg-video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.75;
+      z-index: -1;
+      pointer-events: none;
     }
     .player {
       width: min(92vw, 390px);
@@ -26,10 +39,12 @@
       flex-direction: column;
       align-items: center;
       gap: 1.75rem;
+      transition: width 0.4s ease, gap 0.4s ease, transform 0.4s ease;
     }
     .cover-wrapper {
       width: 100%;
       position: relative;
+      transition: width 0.4s ease, transform 0.4s ease;
     }
     .player img {
       width: 100%;
@@ -37,6 +52,15 @@
       box-shadow: 0 40px 70px rgba(0, 0, 0, 0.65);
       user-select: none;
       cursor: pointer;
+      transition: border-radius 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease;
+    }
+    .info-panel {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.15rem;
+      transition: width 0.4s ease, gap 0.4s ease;
     }
     .progress-bar {
       width: 100%;
@@ -46,6 +70,7 @@
       cursor: pointer;
       overflow: hidden;
       position: relative;
+      transition: height 0.3s ease;
     }
     .progress-fill {
       position: absolute;
@@ -63,6 +88,7 @@
       justify-content: center;
       align-items: center;
       gap: 0.65rem;
+      transition: gap 0.3s ease;
     }
     button {
       font-family: inherit;
@@ -77,7 +103,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.1s ease, transform 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease;
+      transition: background 0.1s ease, transform 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease, width 0.3s ease, height 0.3s ease;
     }
     .control-button:hover {
       background: #1c1c1c;
@@ -92,12 +118,14 @@
     .skip-button {
       width: 54px;
       height: 54px;
+      transition: width 0.3s ease, height 0.3s ease;
     }
     .play-toggle {
       width: 74px;
       height: 74px;
       font-size: 1.8rem;
       font-weight: 600;
+      transition: width 0.3s ease, height 0.3s ease, font-size 0.3s ease;
     }
     .skip-button img {
       width: 30px;
@@ -142,26 +170,71 @@
       color: #fff;
       border-radius: 999px;
     }
+    body.playing {
+      justify-content: flex-start;
+      align-items: flex-start;
+      padding: 1rem;
+    }
+    body.playing .player {
+      width: min(94vw, 640px);
+      flex-direction: row;
+      align-items: center;
+      gap: 1.25rem;
+    }
+    body.playing .cover-wrapper {
+      width: 160px;
+    }
+    body.playing .player img {
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+    body.playing .info-panel {
+      align-items: flex-start;
+      max-width: 360px;
+      width: 100%;
+      gap: 0.85rem;
+      flex: 1;
+    }
+    body.playing .progress-bar {
+      height: 4px;
+    }
+    body.playing .controls {
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    body.playing .skip-button {
+      width: 44px;
+      height: 44px;
+    }
+    body.playing .play-toggle {
+      width: 58px;
+      height: 58px;
+      font-size: 1.4rem;
+    }
   </style>
 </head>
 <body>
+  <video class="bg-video" autoplay muted loop playsinline aria-hidden="true">
+    <source src="xmas-horizontal.mp4" type="video/mp4" />
+  </video>
   <main class="player">
     <div class="cover-wrapper">
       <img src="Album_Cover.JPG" alt="Christmas song album cover" draggable="false" id="albumCover" />
     </div>
 
-    <div class="progress-bar" id="progressBar">
-      <div class="progress-fill" id="progressFill"></div>
-    </div>
+    <div class="info-panel">
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
 
-    <div class="controls">
-      <button id="skipBack" class="control-button skip-button" aria-label="Skip back 10 seconds">
-        <img src="replay_10.svg" alt="" aria-hidden="true" />
-      </button>
-      <button id="playPause" class="control-button play-toggle" aria-label="Play or pause">▶</button>
-      <button id="skipForward" class="control-button skip-button" aria-label="Skip forward 10 seconds">
-        <img src="forward_10.svg" alt="" aria-hidden="true" />
-      </button>
+      <div class="controls">
+        <button id="skipBack" class="control-button skip-button" aria-label="Skip back 10 seconds">
+          <img src="replay_10.svg" alt="" aria-hidden="true" />
+        </button>
+        <button id="playPause" class="control-button play-toggle" aria-label="Play or pause">▶</button>
+        <button id="skipForward" class="control-button skip-button" aria-label="Skip forward 10 seconds">
+          <img src="forward_10.svg" alt="" aria-hidden="true" />
+        </button>
+      </div>
     </div>
 
     <audio id="player" preload="auto">
@@ -192,14 +265,17 @@
       progressFill.style.width = `${progress}%`;
     };
 
+    const updatePlaybackState = (isPlaying) => {
+      playPauseButton.textContent = isPlaying ? '⏸' : '▶';
+      document.body.classList.toggle('playing', isPlaying);
+    };
+
     const togglePlayback = async () => {
       try {
         if (audio.paused) {
           await audio.play();
-          playPauseButton.textContent = '⏸';
         } else {
           audio.pause();
-          playPauseButton.textContent = '▶';
         }
       } catch (err) {
         console.error('Playback error:', err);
@@ -217,8 +293,8 @@
       audio.currentTime = audio.duration ? Math.min(audio.duration, targetTime) : targetTime;
     });
 
-    audio.addEventListener('play', () => (playPauseButton.textContent = '⏸'));
-    audio.addEventListener('pause', () => (playPauseButton.textContent = '▶'));
+    audio.addEventListener('play', () => updatePlaybackState(true));
+    audio.addEventListener('pause', () => updatePlaybackState(false));
     audio.addEventListener('timeupdate', updateProgress);
     audio.addEventListener('loadedmetadata', updateProgress);
 
@@ -251,6 +327,8 @@
         closeModalView();
       }
     });
+
+    updatePlaybackState(false);
   </script>
 </body>
 </html>
