@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Our Christmas Song 🎄</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body, html {
+      height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: white;
+      overflow: hidden;
+    }
+    .video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      filter: brightness(0.6);
+    }
+    .overlay {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1.5rem;
+      background: radial-gradient(circle at top, rgba(255,255,255,0.1), transparent 60%);
+    }
+    h1 {
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      margin-bottom: 0.5rem;
+    }
+    p {
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+      max-width: 480px;
+    }
+    button {
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 9999px;
+      font-size: 1rem;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.9);
+      color: #c02626;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+      background: #ffffff;
+    }
+    .note {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+    audio {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background video -->
+  <video class="video-bg" autoplay muted loop playsinline preload="auto">
+    <source src="video.mp4" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+
+  <div class="overlay">
+    <h1>Our Christmas Cover 🎶</h1>
+    <p>Turn up your speakers and hit play to hear our very own Christmas song cover.</p>
+    <button id="playButton">▶ Play Song</button>
+    <div class="note">If nothing happens, your browser might require you to interact once first.</div>
+
+    <!-- Hidden audio element -->
+    <audio id="player" preload="auto">
+      <source src="song.mp3" type="audio/mpeg" />
+      Your browser does not support the audio element.
+    </audio>
+  </div>
+
+  <script>
+    const button = document.getElementById('playButton');
+    const player = document.getElementById('player');
+
+    button.addEventListener('click', async () => {
+      try {
+        if (player.paused) {
+          await player.play();
+          button.textContent = '⏸ Pause Song';
+        } else {
+          player.pause();
+          button.textContent = '▶ Play Song';
+        }
+      } catch (err) {
+        console.error('Playback error:', err);
+      }
+    });
+  </script>
+</body>
+</html>
