@@ -58,17 +58,18 @@
       gap: 0.75rem;
     }
     button {
-      border: none;
+      border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 999px;
       padding: 0.9rem;
       font-size: 1rem;
-      background: rgba(255, 255, 255, 0.1);
+      background: #111;
       color: #fff;
       cursor: pointer;
-      transition: background 0.1s ease, transform 0.1s ease;
+      transition: background 0.1s ease, transform 0.1s ease, border-color 0.1s ease;
     }
     button:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: #1c1c1c;
+      border-color: rgba(255, 255, 255, 0.5);
       transform: translateY(-1px);
     }
     button:active {
@@ -88,9 +89,9 @@
     </div>
 
     <div class="controls">
-      <button id="skipBack" aria-label="Skip back 10 seconds">⏪ 10s</button>
+      <button id="skipBack" aria-label="Skip back 10 seconds">⏮</button>
       <button id="playPause" aria-label="Play or pause">▶</button>
-      <button id="skipForward" aria-label="Skip forward 10 seconds">10s ⏩</button>
+      <button id="skipForward" aria-label="Skip forward 10 seconds">⏭</button>
     </div>
 
     <audio id="player" preload="auto">
